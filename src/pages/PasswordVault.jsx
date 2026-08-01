@@ -6,17 +6,20 @@ import {
   Eye,
   EyeOff,
   Copy,
+  Check,
   Pencil,
   Trash2,
   Globe,
 } from "lucide-react";
 import Swal from "sweetalert2";
+import EmptyState from "../components/dashboard/EmptyState";
 import {
   getPasswords,
   getPassword,
   deletePassword,
 } from "../services/password.service";
 import toast from "react-hot-toast";
+import PageLoader from "../components/common/PageLoader"
 import AddEditPasswordModal from "../components/dashboard/AddEditPasswordModal";
 
 const categories = ["All", "Work", "Personal", "Finance", "Social", "Other"];
@@ -25,7 +28,7 @@ const PasswordVault = () => {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [filterOpen, setFilterOpen] = useState(false);
-
+  const [copiedId, setCopiedId] = useState(null);
   const [passwords, setPasswords] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -41,6 +44,7 @@ const PasswordVault = () => {
   }, []);
 
   const fetchPasswords = async () => {
+
     try {
       setLoading(true);
 
@@ -54,7 +58,7 @@ const PasswordVault = () => {
 
       setError(
         err.response?.data?.message ||
-          "Failed to fetch passwords."
+        "Failed to fetch passwords."
       );
     } finally {
       setLoading(false);
@@ -98,7 +102,7 @@ const PasswordVault = () => {
     } catch (err) {
       alert(
         err.response?.data?.message ||
-          "Unable to load password."
+        "Unable to load password."
       );
     }
   };
@@ -107,50 +111,50 @@ const PasswordVault = () => {
   // Delete
   // ===========================
 
- const handleDelete = async (id) => {
-  const result = await Swal.fire({
-     title: "Delete Password?",
-  text: "You won't be able to recover this password.",
-  icon: "warning",
-  width: "360px", // 👈 size chota
-  padding: "1.5rem",
-  showCancelButton: true,
-  confirmButtonColor: "#EF4444",
-  cancelButtonColor: "#334155",
-  confirmButtonText: "Yes, Delete",
-  cancelButtonText: "Cancel",
-  background: "#0F172A",
-  color: "#fff",
-  });
-
-  if (!result.isConfirmed) return;
-
-  try {
-    await deletePassword(id);
-
-    fetchPasswords();
-
-    Swal.fire({
-      icon: "success",
-      title: "Deleted!",
-      text: "Password deleted successfully.",
-      timer: 1800,
-      showConfirmButton: false,
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "Delete Password?",
+      text: "You won't be able to recover this password.",
+      icon: "warning",
+      width: "360px", // 👈 size chota
+      padding: "1.5rem",
+      showCancelButton: true,
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#334155",
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
       background: "#0F172A",
       color: "#fff",
     });
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text:
-        err.response?.data?.message ||
-        "Failed to delete password.",
-      background: "#0F172A",
-      color: "#fff",
-    });
-  }
-};
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await deletePassword(id);
+
+      fetchPasswords();
+
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Password deleted successfully.",
+        timer: 1800,
+        showConfirmButton: false,
+        background: "#0F172A",
+        color: "#fff",
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text:
+          err.response?.data?.message ||
+          "Failed to delete password.",
+        background: "#0F172A",
+        color: "#fff",
+      });
+    }
+  };
 
   // ===========================
   // Eye
@@ -177,7 +181,7 @@ const PasswordVault = () => {
     } catch (err) {
       alert(
         err.response?.data?.message ||
-          "Unable to decrypt password."
+        "Unable to decrypt password."
       );
     }
   };
@@ -192,28 +196,26 @@ const PasswordVault = () => {
 
       if (!password) {
         const res = await getPassword(id);
-
         password = res.data.data.password;
       }
 
       await navigator.clipboard.writeText(password);
 
-      alert("Password copied.");
+      setCopiedId(id);
+
+      setTimeout(() => {
+        setCopiedId(null);
+      }, 2000);
     } catch (err) {
       alert(
         err.response?.data?.message ||
-          "Unable to copy password."
+        "Unable to copy password."
       );
     }
   };
-    if (loading) {
-    return (
-      <div className="flex h-80 items-center justify-center">
-        <p className="text-gray-400">Loading passwords...</p>
-      </div>
-    );
-  }
-
+ if (loading) {
+  return <PageLoader text="Loading passwords..." />;
+}
   if (error) {
     return (
       <div className="flex h-80 items-center justify-center">
@@ -295,11 +297,10 @@ const PasswordVault = () => {
                     }}
                     className={`block w-full rounded-lg px-3 py-2 text-left transition
 
-                    ${
-                      category === cat
+                    ${category === cat
                         ? "bg-blue-600 text-white"
                         : "text-slate-300 hover:bg-slate-800"
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>
@@ -316,185 +317,234 @@ const PasswordVault = () => {
 
         {/* Table */}
 
-        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+        
+{/* Table */}
 
-          <div className="overflow-x-auto">
+{passwords.length === 0 ? (
+  <EmptyState
+    heading="No passwords saved yet"
+    description="Store your website logins securely with military-grade encryption."
+    actionLabel="Add First Password"
+    onAction={handleAdd}
+  />
+) : (
+  <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
 
-            <table className="w-full min-w-[750px]">
+    <div className="overflow-x-auto">
 
-              <thead>
+      <table className="w-full min-w-[750px]">
 
-                <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wider text-slate-400">
+        <thead>
 
-                  <th className="px-5 py-4">Website</th>
+          <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wider text-slate-400">
 
-                  <th className="px-5 py-4">Username</th>
+            <th className="px-5 py-4">Website</th>
 
-                  <th className="px-5 py-4">Password</th>
+            <th className="px-5 py-4">Username</th>
 
-                  <th className="px-5 py-4">Updated</th>
+            <th className="px-5 py-4">Password</th>
 
-                  <th className="px-5 py-4 text-right">
-                    Actions
-                  </th>
+            <th className="px-5 py-4">Strength</th>
 
-                </tr>
+            <th className="px-5 py-4">Updated</th>
 
-              </thead>
+            <th className="px-5 py-4 text-right">
+              Actions
+            </th>
 
-              <tbody>
+          </tr>
 
-                {filtered.length === 0 ? (
+        </thead>
 
-                  <tr>
+        <tbody>
 
-                    <td
-                      colSpan={5}
-                      className="py-16 text-center text-slate-500"
+          {filtered.length === 0 ? (
+
+            <tr>
+
+              <td
+                colSpan={6}
+                className="py-16 text-center text-slate-500"
+              >
+                No passwords match your search.
+              </td>
+
+            </tr>
+
+          ) : (
+
+            filtered.map((item) => (
+
+              <tr
+                key={item._id}
+                className="border-b border-slate-800 hover:bg-slate-800/40"
+              >
+
+                <td className="px-5 py-4">
+
+                  <div className="flex items-center gap-3">
+
+                    <div className="rounded-lg bg-blue-600/20 p-2 text-blue-400">
+
+                      {item.favicon ? (
+                        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-[#1E293B]">
+                          <img
+                            src={item.favicon}
+                            alt={item.title}
+                            className="max-h-7 max-w-7 object-contain"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.parentElement.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                  width="18"
+                                  height="18"
+                                  fill="none"
+                                  stroke="#60A5FA"
+                                  stroke-width="2"
+                                  viewBox="0 0 24 24">
+                                  <circle cx="12" cy="12" r="10"/>
+                                  <path d="M2 12h20"/>
+                                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                </svg>
+                              `;
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#3B82F6]/15 text-[#60A5FA]">
+                          <Globe className="h-4 w-4" />
+                        </span>
+                      )}
+
+                    </div>
+
+                    <div>
+
+                      <p className="font-medium text-white">
+                        {item.title}
+                      </p>
+
+                      <p className="text-xs text-slate-400">
+                        {item.website}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td className="px-5 py-4 text-slate-300">
+                  {item.username}
+                </td>
+
+                <td className="px-5 py-4">
+
+                  <div className="flex items-center gap-2">
+
+                    <span className="font-mono text-white">
+
+                      {visible[item._id]
+                        ? visible[item._id]
+                        : "••••••••••"}
+
+                    </span>
+
+                    <button
+                      onClick={() => toggleVisible(item._id)}
                     >
-                      No passwords found.
-                    </td>
+                      {visible[item._id] ? (
+                        <EyeOff
+                          size={17}
+                          className="text-slate-400 hover:text-white"
+                        />
+                      ) : (
+                        <Eye
+                          size={17}
+                          className="text-slate-400 hover:text-white"
+                        />
+                      )}
+                    </button>
 
-                  </tr>
-
-                ) : (
-
-                  filtered.map((item) => (
-
-                    <tr
-                      key={item._id}
-                      className="border-b border-slate-800 hover:bg-slate-800/40"
+                    <button
+                      onClick={() => handleCopy(item._id)}
+                      className="text-slate-400 transition hover:text-white"
                     >
+                      {copiedId === item._id ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </button>
 
-                      <td className="px-5 py-4">
+                  </div>
 
-                        <div className="flex items-center gap-3">
+                </td>
 
-                          <div className="rounded-lg bg-blue-600/20 p-2 text-blue-400">
+                <td className="px-4 py-3.5">
 
-                            <Globe size={18} />
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      item.passwordStrength === "Strong"
+                        ? "bg-green-500/15 text-green-400"
+                        : item.passwordStrength === "Medium"
+                        ? "bg-yellow-500/15 text-yellow-400"
+                        : "bg-red-500/15 text-red-400"
+                    }`}
+                  >
+                    {item.passwordStrength}
+                  </span>
 
-                          </div>
+                </td>
 
-                          <div>
+                <td className="px-5 py-4 text-slate-400">
 
-                            <p className="font-medium text-white">
-                              {item.title}
-                            </p>
+                  {new Date(item.updatedAt).toLocaleDateString()}
 
-                            <p className="text-xs text-slate-400">
-                              {item.website}
-                            </p>
+                </td>
 
-                          </div>
+                <td className="px-5 py-4">
 
-                        </div>
+                  <div className="flex justify-end gap-2">
 
-                      </td>
+                    <button
+                      onClick={() => handleEdit(item._id)}
+                      className="rounded-lg p-2 hover:bg-slate-700"
+                    >
+                      <Pencil
+                        size={18}
+                        className="text-slate-300"
+                      />
+                    </button>
 
-                      <td className="px-5 py-4 text-slate-300">
-                        {item.username}
-                      </td>
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="rounded-lg p-2 hover:bg-red-600/20"
+                    >
+                      <Trash2
+                        size={18}
+                        className="text-red-400"
+                      />
+                    </button>
 
-                      <td className="px-5 py-4">
+                  </div>
 
-                        <div className="flex items-center gap-2">
+                </td>
 
-                          <span className="font-mono text-white">
+              </tr>
 
-                            {visible[item._id]
-                              ? visible[item._id]
-                              : "••••••••••"}
+            ))
 
-                          </span>
+          )}
 
-                          <button
-                            onClick={() =>
-                              toggleVisible(item._id)
-                            }
-                          >
-                            {visible[item._id] ? (
-                              <EyeOff
-                                size={17}
-                                className="text-slate-400 hover:text-white"
-                              />
-                            ) : (
-                              <Eye
-                                size={17}
-                                className="text-slate-400 hover:text-white"
-                              />
-                            )}
-                          </button>
+        </tbody>
 
-                          <button
-                            onClick={() =>
-                              handleCopy(item._id)
-                            }
-                          >
-                            <Copy
-                              size={17}
-                              className="text-slate-400 hover:text-white"
-                            />
-                          </button>
+      </table>
 
-                        </div>
+    </div>
 
-                      </td>
-
-                      <td className="px-5 py-4 text-slate-400">
-
-                        {new Date(
-                          item.updatedAt
-                        ).toLocaleDateString()}
-
-                      </td>
-
-                      <td className="px-5 py-4">
-
-                        <div className="flex justify-end gap-2">
-
-                          <button
-                            onClick={() =>
-                              handleEdit(item._id)
-                            }
-                            className="rounded-lg p-2 hover:bg-slate-700"
-                          >
-                            <Pencil
-                              size={18}
-                              className="text-slate-300"
-                            />
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              handleDelete(item._id)
-                            }
-                            className="rounded-lg p-2 hover:bg-red-600/20"
-                          >
-                            <Trash2
-                              size={18}
-                              className="text-red-400"
-                            />
-                          </button>
-
-                        </div>
-
-                      </td>
-
-                    </tr>
-
-                  ))
-
-                )}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-        </div>
-
+  </div>
+)}
       </div>
 
       <AddEditPasswordModal
