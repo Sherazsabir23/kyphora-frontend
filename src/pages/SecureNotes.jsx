@@ -31,6 +31,7 @@ const SecureNotes = () => {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
 
+const maskContent = () => "••••••••";
   const categories = useMemo(() => {
     return [
       "All",
@@ -271,9 +272,11 @@ const handleView = async (note) => {
           {note.title}
         </h3>
 
-        <p className="mt-1.5 flex-1 text-xs leading-relaxed text-[#94A3B8] line-clamp-3">
-          {note.preview}
-        </p>
+        <p className="mt-1.5 flex-1 font-mono text-xs leading-relaxed text-[#94A3B8] line-clamp-3 break-all">
+  <p className="mt-1.5 flex-1 font-mono text-xs leading-relaxed tracking-widest text-[#94A3B8]">
+  {maskContent()}
+</p>
+</p>
 
         <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-3">
           <span className="rounded-full border border-white/[0.08] px-2.5 py-1 text-[10px] text-[#94A3B8]">

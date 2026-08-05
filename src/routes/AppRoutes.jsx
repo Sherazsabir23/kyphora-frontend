@@ -16,7 +16,6 @@ import DashboardHome from "../pages/DashboardHome";
 import PasswordVault from "../pages/PasswordVault";
 import SecureNotes from "../pages/SecureNotes";
 import CreditCards from "../pages/CreditCards";
-import IdentityVault from "../pages/IdentityVault";
 import ApiKeys from "../pages/ApiKeys";
 import Documents from "../pages/Documents";
 import PasswordGenerator from "../pages/PasswordGenerator";
@@ -58,7 +57,7 @@ const AppRoutes = () => {
           <Route path="vault/passwords" element={<PasswordVault />} />
           <Route path="vault/notes" element={<SecureNotes />} />
           <Route path="vault/cards" element={<CreditCards />} />
-          <Route path="vault/identity" element={<IdentityVault />} />
+          
           <Route path="vault/api-keys" element={<ApiKeys />} />
           <Route path="vault/documents" element={<Documents />} />
 

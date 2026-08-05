@@ -1,36 +1,7 @@
+import { useEffect, useState } from "react";
 import { ShieldCheck, AlertTriangle, ShieldAlert, Clock3, ArrowRight } from "lucide-react";
 import StatCard from "../components/dashboard/StatCard";
-
-const health = [
-  { label: "Strong Passwords", count: 186, total: 245, color: "bg-[#22C55E]" },
-  { label: "Weak Passwords", count: 5, total: 245, color: "bg-[#EF4444]" },
-  { label: "Reused Passwords", count: 12, total: 245, color: "bg-[#F59E0B]" },
-  { label: "Old Passwords", count: 42, total: 245, color: "bg-[#60A5FA]" },
-];
-
-const recommendations = [
-  {
-    icon: AlertTriangle,
-    tone: "danger",
-    title: "Fix weak password",
-    description: "5 passwords are too short or predictable. Update them to strengthen your vault.",
-    action: "Fix Now",
-  },
-  {
-    icon: ShieldCheck,
-    tone: "blue",
-    title: "Enable 2FA",
-    description: "Add two-factor authentication to your account for an extra layer of protection.",
-    action: "Enable 2FA",
-  },
-  {
-    icon: Clock3,
-    tone: "warning",
-    title: "Review old passwords",
-    description: "42 passwords haven't been updated in over a year. Consider rotating them.",
-    action: "Review",
-  },
-];
+import { getSecurityOverview } from "../services/security.service";
 
 const toneStyles = {
   danger: { bg: "bg-[#EF4444]/10", text: "text-[#EF4444]", border: "border-[#EF4444]/20" },
@@ -39,6 +10,79 @@ const toneStyles = {
 };
 
 const SecurityCenter = () => {
+  const [overview, setOverview] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const data = await getSecurityOverview();
+        setOverview(data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load security overview.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOverview();
+  }, []);
+
+  if (loading) {
+    return <p className="text-sm text-[#94A3B8]">Loading security overview...</p>;
+  }
+
+  if (error || !overview) {
+    return <p className="text-sm text-[#EF4444]">{error || "Something went wrong."}</p>;
+  }
+
+  const { securityScore, passwordHealth, recommendations } = overview;
+  const { strong, weak, reused, old, total } = passwordHealth;
+
+  const health = [
+    { label: "Strong Passwords", count: strong, total, color: "bg-[#22C55E]" },
+    { label: "Weak Passwords", count: weak, total, color: "bg-[#EF4444]" },
+    { label: "Reused Passwords", count: reused, total, color: "bg-[#F59E0B]" },
+    { label: "Old Passwords", count: old, total, color: "bg-[#60A5FA]" },
+  ];
+
+  const recommendationCards = [
+    recommendations.weakPasswordsCount > 0 && {
+      icon: AlertTriangle,
+      tone: "danger",
+      title: "Fix weak password",
+      description: `${recommendations.weakPasswordsCount} password${
+        recommendations.weakPasswordsCount === 1 ? " is" : "s are"
+      } too short or predictable. Update them to strengthen your vault.`,
+      action: "Fix Now",
+    },
+    !recommendations.twoFactorEnabled && {
+      icon: ShieldCheck,
+      tone: "blue",
+      title: "Enable 2FA",
+      description: "Add two-factor authentication to your account for an extra layer of protection.",
+      action: "Enable 2FA",
+    },
+    recommendations.oldPasswordsCount > 0 && {
+      icon: Clock3,
+      tone: "warning",
+      title: "Review old passwords",
+      description: `${recommendations.oldPasswordsCount} password${
+        recommendations.oldPasswordsCount === 1 ? " hasn't" : "s haven't"
+      } been updated in over a year. Consider rotating them.`,
+      action: "Review",
+    },
+  ].filter(Boolean);
+
+  const scoreDescription =
+    securityScore >= 80
+      ? "Your vault is well protected overall"
+      : securityScore >= 50
+      ? "Your vault could use some improvements"
+      : "Your vault needs attention";
+
   return (
     <div className="space-y-6">
       <div>
@@ -54,21 +98,21 @@ const SecurityCenter = () => {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#22C55E]/15 text-[#22C55E]">
             <ShieldCheck className="h-5 w-5" />
           </div>
-          <p className="mt-4 text-3xl font-semibold text-white">94%</p>
+          <p className="mt-4 text-3xl font-semibold text-white">{securityScore}%</p>
           <p className="mt-1 text-sm font-medium text-white/90">Security Score</p>
-          <p className="mt-1 text-xs text-[#94A3B8]">Your vault is well protected overall</p>
+          <p className="mt-1 text-xs text-[#94A3B8]">{scoreDescription}</p>
         </div>
 
         <StatCard
           icon={ShieldAlert}
-          value="5"
+          value={String(weak)}
           label="Weak Passwords"
           description="Need attention soon"
           tone="danger"
         />
         <StatCard
           icon={Clock3}
-          value="42"
+          value={String(old)}
           label="Old Passwords"
           description="Unchanged for 12+ months"
           tone="blue"
@@ -88,7 +132,7 @@ const SecurityCenter = () => {
               <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
                 <div
                   className={`h-full rounded-full ${color}`}
-                  style={{ width: `${Math.min((count / total) * 100, 100)}%` }}
+                  style={{ width: `${total > 0 ? Math.min((count / total) * 100, 100) : 0}%` }}
                 />
               </div>
             </div>
@@ -97,34 +141,36 @@ const SecurityCenter = () => {
       </div>
 
       {/* Recommendations */}
-      <div>
-        <h2 className="mb-4 text-base font-semibold text-white">Recommendations</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {recommendations.map(({ icon: Icon, tone, title, description, action }) => {
-            const s = toneStyles[tone];
-            return (
-              <div
-                key={title}
-                className={`flex flex-col rounded-2xl border ${s.border} bg-white/5 p-5`}
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.bg} ${s.text}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-4 text-sm font-semibold text-white">{title}</h3>
-                <p className="mt-1.5 flex-1 text-xs leading-relaxed text-[#94A3B8]">
-                  {description}
-                </p>
-                <button
-                  className={`mt-4 flex items-center gap-1.5 text-xs font-semibold ${s.text} hover:text-white`}
+      {recommendationCards.length > 0 && (
+        <div>
+          <h2 className="mb-4 text-base font-semibold text-white">Recommendations</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {recommendationCards.map(({ icon: Icon, tone, title, description, action }) => {
+              const s = toneStyles[tone];
+              return (
+                <div
+                  key={title}
+                  className={`flex flex-col rounded-2xl border ${s.border} bg-white/5 p-5`}
                 >
-                  {action}
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            );
-          })}
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.bg} ${s.text}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold text-white">{title}</h3>
+                  <p className="mt-1.5 flex-1 text-xs leading-relaxed text-[#94A3B8]">
+                    {description}
+                  </p>
+                  <button
+                    className={`mt-4 flex items-center gap-1.5 text-xs font-semibold ${s.text} hover:text-white`}
+                  >
+                    {action}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

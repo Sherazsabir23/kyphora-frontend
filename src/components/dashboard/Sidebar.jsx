@@ -22,7 +22,6 @@ const vaultItems = [
   { label: "Passwords", icon: Lock, to: "/dashboard/vault/passwords" },
   { label: "Secure Notes", icon: StickyNote, to: "/dashboard/vault/notes" },
   { label: "Credit Cards", icon: CreditCard, to: "/dashboard/vault/cards" },
-  { label: "Identity", icon: UserCircle2, to: "/dashboard/vault/identity" },
   { label: "API Keys", icon: Code2, to: "/dashboard/vault/api-keys" },
   { label: "Documents", icon: FileText, to: "/dashboard/vault/documents" },
 ];
