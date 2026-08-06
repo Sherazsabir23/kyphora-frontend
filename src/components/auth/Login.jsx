@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
-import { login } from "../../services/auth.service"
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
+import { login, verify2FALogin } from "../../services/auth.service"
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../redux/features/authSlice";
@@ -16,6 +16,11 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  // NEW: 2FA challenge step
+  const [twoFactorToken, setTwoFactorToken] = useState(null);
+  const [twoFACode, setTwoFACode] = useState("");
+  const [verifying2FA, setVerifying2FA] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -33,6 +38,13 @@ const Login = () => {
       setLoading(true);
 
       const response = await login(formData);
+
+      // NEW: 2FA required — don't log in yet, show the code step instead
+      if (response.twoFactorRequired) {
+        setTwoFactorToken(response.twoFactorToken);
+        toast(response.message || "Enter your 2FA code to continue.");
+        return;
+      }
 
       toast.success(response.message);
 
@@ -62,6 +74,95 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  // NEW: submit the 6-digit authenticator code to complete login
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+
+    try {
+      setVerifying2FA(true);
+
+      const response = await verify2FALogin({
+        twoFactorToken,
+        token: twoFACode,
+      });
+
+      toast.success(response.message);
+
+      dispatch(setUser(response.user));
+
+      navigate("/dashboard");
+    } catch (error) {
+      const data = error.response?.data;
+      toast.error(data?.message || "Invalid verification code.");
+    } finally {
+      setVerifying2FA(false);
+    }
+  };
+
+  // NEW: 2FA code-entry view — replaces the login form once challenged
+  if (twoFactorToken) {
+    return (
+      <div>
+        <div className="text-center lg:text-left">
+          <h2 className="text-2xl font-semibold tracking-tight text-white">
+            Two-Factor Authentication
+          </h2>
+          <p className="mt-2 text-sm text-[#94A3B8]">
+            Enter the 6-digit code from your authenticator app.
+          </p>
+        </div>
+
+        <form onSubmit={handleVerify2FA} className="mt-8 space-y-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-[#94A3B8]">
+              Verification code
+            </label>
+            <div className="relative">
+              <ShieldCheck className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" />
+              <input
+                name="twoFACode"
+                value={twoFACode}
+                onChange={(e) => setTwoFACode(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                placeholder="123456"
+                autoFocus
+                className="w-full rounded-xl border border-white/[0.08] bg-white/5 py-3 pl-11 pr-4 text-sm text-white placeholder:text-[#94A3B8]/60 outline-none transition-colors focus:border-[#3B82F6]/60 focus:bg-white/[0.07]"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={verifying2FA}
+            className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#3B82F6] py-3.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(59,130,246,0.4),0_8px_30px_-8px_rgba(59,130,246,0.7)] transition-all hover:bg-[#60A5FA] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {verifying2FA ? (
+              <Loader />
+            ) : (
+              <>
+                Verify & Sign In
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setTwoFactorToken(null);
+              setTwoFACode("");
+            }}
+            className="w-full text-center text-xs font-medium text-[#94A3B8] hover:text-white"
+          >
+            Back to login
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="text-center lg:text-left">

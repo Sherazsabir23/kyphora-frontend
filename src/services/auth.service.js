@@ -31,6 +31,16 @@ const response = await api.post("/auth/login",
 return response.data;
 }
 
+// NEW: completes login when the 2FA challenge step is required
+export const verify2FALogin = async ({ twoFactorToken, token }) => {
+  const response = await api.post("/auth/verify-2fa", {
+    twoFactorToken,
+    token,
+  });
+
+  return response.data;
+};
+
 export const getMe = async () => {
   const response = await api.get("/auth/me");
 
