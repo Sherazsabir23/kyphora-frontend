@@ -11,10 +11,8 @@ import {
   Lock,
   StickyNote,
   CreditCard,
-  UserCircle2,
   Code2,
   FileText,
-  LogOut,
   X,
 } from "lucide-react";
 
@@ -137,29 +135,6 @@ const Sidebar = ({ open, onClose }) => {
             </NavLink>
           ))}
         </nav>
-
-        {/* Profile card */}
-        <div className="border-t border-white/[0.08] p-3">
-          <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#3B82F6] to-[#60A5FA] text-sm font-semibold text-white">
-              JL
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">Jordan Lee</p>
-              <p className="truncate text-xs text-[#94A3B8]">jordan@kyphora.com</p>
-            </div>
-            <button
-              className="shrink-0 text-[#94A3B8] transition-colors hover:text-[#EF4444]"
-              aria-label="Log out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mt-2 flex items-center justify-between rounded-lg bg-[#3B82F6]/10 px-3 py-1.5">
-            <span className="text-[11px] font-medium text-[#60A5FA]">Pro Plan</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-          </div>
-        </div>
       </aside>
     </>
   );

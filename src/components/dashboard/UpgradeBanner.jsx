@@ -33,7 +33,7 @@ const UpgradeBanner = () => {
         </div>
 
         <button className="shrink-0 rounded-xl bg-[#3B82F6] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(59,130,246,0.4),0_8px_30px_-8px_rgba(59,130,246,0.7)] transition-colors hover:bg-[#60A5FA] lg:ml-8">
-          Upgrade Plan
+          Coming Soon
         </button>
       </div>
     </div>
