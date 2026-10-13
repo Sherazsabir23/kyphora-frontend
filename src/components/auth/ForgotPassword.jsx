@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { KeyRound, Mail, ArrowRight, ArrowLeft } from "lucide-react";
 import { forgotPassword } from "../../services/auth.service";
 import { toast } from "react-hot-toast";
-import Loader from "../../components/common/loader"
+import Loader from "../../components/common/Loader"
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

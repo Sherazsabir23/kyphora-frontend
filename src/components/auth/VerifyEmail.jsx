@@ -2,7 +2,7 @@ import { useRef, useState,useEffect } from "react";
 import { Link ,useNavigate, useLocation} from "react-router-dom";
 import { MailCheck, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
-import Loader from '../../components/common/loader'
+import Loader from '../../components/common/Loader'
 import {  verifyUserEmail , resendVerificationCode } from "../../services/auth.service"
 const VerifyEmail = () => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
