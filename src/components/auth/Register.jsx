@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link,useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
-import Loader from "../common/loader";
+import Loader from "../common/Loader";
 import toast from "react-hot-toast";
 import { registerUser } from "../../services/auth.service";
 
