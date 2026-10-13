@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ShieldCheck, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { resetPassword } from "../../services/auth.service";
-import Loader from "../../components/common/Loader";
+import Loader from "../common/Loader";
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);

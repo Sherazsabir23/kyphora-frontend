@@ -5,7 +5,7 @@ import { login, verify2FALogin } from "../../services/auth.service"
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../redux/features/authSlice";
-import Loader from "../common/Loader";
+import Loader from "../common/loader";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
