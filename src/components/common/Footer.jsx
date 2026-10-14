@@ -16,11 +16,6 @@ const LinkedinIcon = (props) => (
   </svg>
 );
 
-const TwitterIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path d="M18.9 2H22l-7.4 8.46L23 22h-6.8l-5.3-6.9L4.8 22H1.7l7.9-9.04L1 2h6.9l4.8 6.3L18.9 2Zm-1.2 18.2h1.9L7.4 3.7H5.4l12.3 16.5Z" />
-  </svg>
-);
 
 const columns = [
   {
@@ -52,9 +47,9 @@ const columns = [
 ];
 
 const socials = [
-  { icon: GithubIcon, href: "https://github.com", label: "GitHub" },
-  { icon: LinkedinIcon, href: "https://linkedin.com", label: "LinkedIn" },
-  { icon: TwitterIcon, href: "https://twitter.com", label: "Twitter" },
+  { icon: GithubIcon, href: "https://github.com/Sherazsabir23", label: "GitHub" },
+  { icon: LinkedinIcon, href: "https://www.linkedin.com/in/sheraz-ali-454a0236a/", label: "LinkedIn" },
+
 ];
 
 const Footer = () => {

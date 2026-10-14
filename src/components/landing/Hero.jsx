@@ -1,5 +1,6 @@
 import { ShieldCheck, Lock, ArrowRight, PlayCircle, Fingerprint } from "lucide-react";
-
+import { useDispatch,useSelector } from "react-redux";
+import { Navigate, useNavigate } from "react-router-dom";
 const trustBadges = [
   { icon: Lock, label: "AES Encryption" },
   { icon: Fingerprint, label: "JWT Auth" },
@@ -7,6 +8,17 @@ const trustBadges = [
 ];
 
 const Hero = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+const user = useSelector((state) => state.auth.user);
+
+const handleGetStarted = async () => {
+  if(user){
+    navigate("/dashboard")
+  }else{
+    navigate("/login")
+  }
+}
   return (
     <section className="relative overflow-hidden pt-36 pb-24 md:pt-44 md:pb-32">
       {/* Ambient glow blobs */}
@@ -18,10 +30,6 @@ const Hero = () => {
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 lg:grid-cols-2 lg:px-8">
         {/* Left column */}
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/5 px-4 py-1.5 text-xs font-medium text-[#94A3B8]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-            Trusted Password Manager
-          </div>
 
           <h1 className="mt-6 text-4xl font-semibold leading-[1.1] tracking-tight text-white md:text-6xl">
             Secure your passwords,{" "}
@@ -37,7 +45,7 @@ const Hero = () => {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <button className="group inline-flex items-center gap-2 rounded-2xl bg-[#3B82F6] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(59,130,246,0.4),0_8px_30px_-8px_rgba(59,130,246,0.7)] transition-all hover:bg-[#60A5FA] hover:shadow-[0_0_0_1px_rgba(96,165,250,0.6),0_12px_40px_-8px_rgba(96,165,250,0.8)]">
+            <button onClick={handleGetStarted} className="group inline-flex items-center gap-2 rounded-2xl bg-[#3B82F6] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_0_0_1px_rgba(59,130,246,0.4),0_8px_30px_-8px_rgba(59,130,246,0.7)] transition-all hover:bg-[#60A5FA] hover:shadow-[0_0_0_1px_rgba(96,165,250,0.6),0_12px_40px_-8px_rgba(96,165,250,0.8)]">
               Get Started
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
